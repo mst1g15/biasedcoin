@@ -556,8 +556,8 @@ simfuture.logis.cont <- function(covar, true.beta, init, k, sim, z.probs, int=NU
     }else if (!is.null(int)) {
       D <-  logit.coord(covar[1:init,], beta, 2, int=T, lossfunc, ...)
     }else{
-      t <-optim(par = runif(init, -1,1), Dopt.y.t.init, method="L-BFGS-B", lower=-1, upper=1, z=as.numeric(covar[1:5,]), int=NULL, beta=c(rep(0, 3)), epsilon=0.00001)$par
-      D <-cbind(1, covar[1:5,], t)
+      t <-optim(par = runif(init, -1,1), Dopt.y.t.init, method="L-BFGS-B", lower=-1, upper=1, z=as.numeric(covar[1:init,]), int=int, beta=c(rep(0, 3)), epsilon=0.00001)$par
+      D <-cbind(1, covar[1:init,], t)
     }
 
   }
@@ -581,7 +581,7 @@ simfuture.logis.cont <- function(covar, true.beta, init, k, sim, z.probs, int=NU
 
   all.betas <- beta
 
-  for (i in (init+1):n){
+  for (i in (init+1):(n)){
 
 
     if (z.probs[1]=="learn"){
@@ -597,31 +597,30 @@ simfuture.logis.cont <- function(covar, true.beta, init, k, sim, z.probs, int=NU
       n.r <- 1
     }
 
-
-
-    new.tmt <- optim(runif(1, -1, 1), Dopt.pseudo.t, method="Brent", lower=-1, upper=1, D=D, z=covar[i,], int=NULL, beta=beta, M=sim, n.r=n.r, z.probs=z.probs.i)$par
+    new.tmt <- as.matrix(optim(runif(1, -1, 1), Dopt.pseudo.t, method="Brent", lower=-1, upper=1, D=D, z=covar[i,], int=int, beta=beta, M=sim, n.r=n.r, z.probs=z.probs.i)$par)
 
 
     if (!is.null(true.bvcov)){
-      opt <- c(opt, Dopt.y.t(new.tmt, D, covar[i, ], int, true.beta ))
+      opt <- c(opt, Dopt.y.t(t=new.tmt, D=D, z=covar[i,], int=int, beta=true.beta ))
 
 
     }else{
-          opt <- c(opt, Dopt.y.t(new.tmt, D, covar[i, ], int, beta ))
+          opt <- c(opt, Dopt.y.t(t=new.tmt, D=D, z=covar[i,], int=int, beta=beta ))
 
     }
+
+   z.now <- as.matrix(covar[i,])
 
     #new row of design matrix
     if (!is.null(int)){
-      new.d <- as.numeric(c(1, covar[i, ], new.tmt, covar[i, ]*new.tmt))
+      new.d <- cbind(1, z.now, new.tmt, new.tmt%*%z.now)
     } else{
-      new.d <- as.numeric(c(1, covar[i, ], new.tmt))
+      new.d <-cbind(1, z.now, new.tmt)
     }
-
 
     D <- rbind(D, as.numeric(new.d))
 
-    pi <- probi(new.d, true.beta)       #Compute new pi
+    pi <- probi(c(new.d), true.beta)       #Compute new pi
 
     if (!is.null(u)){
       new.y <- ifelse(u[i] < pi, 1, 0)
@@ -673,11 +672,16 @@ simfuture.logis.cont <- function(covar, true.beta, init, k, sim, z.probs, int=NU
 
 Dopt.pseudo.t <- function(t, D, z, int=NULL, beta, M, n.r, z.probs){
 
-  if (!is.null(int)){
+  row.names(z) <-NULL
+  if (!is.null(int)&length(z)==1){
     new.d <-c(1, z, t, z*t)
-  }else{
+  }else if (!is.null(int)&length(z)>1){
+    new.d <-cbind(1, z, t, t%*%as.matrix(z))
+  }else {
     new.d <-as.matrix(cbind(1, z, t))
   }
+
+
 
   colnames(new.d) <- colnames(D)
   D <- rbind(D, new.d)

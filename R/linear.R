@@ -103,19 +103,39 @@ calc.D <- function(mat, epsilon=0.00001){
 
 calc.G <- function(mat, epsilon=0.00001){
 
-  j <- ncol(mat)
+  k <- ncol(mat)
   mat <- as.matrix(mat)
-  X <- as.matrix(cbind(1, expand.grid(rep(list(c(-1,1)),j-1))))
+  X <- as.matrix(cbind(1, expand.grid(rep(list(c(-1,1)),k-1))))
   all <- diag((X)%*%solve(t(mat)%*%mat + diag(k)*epsilon)%*%t(X))
-  loss <- max(diag((X)%*%solve(t(mat)%*%mat + diag(j)*epsilon)%*%t(X)))
+  loss <- max(diag((X)%*%solve(t(mat)%*%mat + diag(k)*epsilon)%*%t(X)))
 
 
-  return(list(loss=loss, all=all))
+  #return(list(loss=loss, all=all))
 
-
+  return(loss)
 }
 
 
+
+calc.Gint <- function(mat, epsilon=0.00001){
+  #purpose - given a design matrix, calculate the G- optimality criterion if interaction is
+  # included in the model
+  #input: matrix or dataframe mat for the design matrix
+  #       epsilon is a tiny real number for regularization
+  #       if print==TRUE, provide variances for each of the design points
+  #ouput: a real number for the G- optimality criterion
+
+  k <- ncol(mat)
+  ncovar <- (k-2)/2
+  mat <- as.matrix(mat)
+  main <- as.matrix(expand.grid(rep(list(c(-1,1)),ncovar +1)))
+  X <- cbind(1, main, main[,1:(ncovar)]*main[,-c(1:ncovar)])
+  all <- diag((X)%*%solve(t(mat)%*%mat + diag(k)*epsilon)%*%t(X))
+  loss <- max(diag((X)%*%solve(t(mat)%*%mat + diag(k)*epsilon)%*%t(X)))
+
+    return(loss)
+
+}
 
 
 #' Given a design matrix, calculate the covariate balance for a linear model
@@ -400,9 +420,9 @@ atkins <- function(covar, lossfunc=calc.D, int=NULL, init=1, same.start=NULL, st
   row.names(D) <- NULL
   D <- as.data.frame(D)
   if (is.null(int)){
-    colnames(D) <- c("intercept", rep("covar", j), "tmt")
+    colnames(D) <- c("1", rep("covar", j), "tmt")
   } else {
-    colnames(D) <- c("intercept", rep("covar", j), "tmt",  rep("int", j))
+    colnames(D) <- c("1", rep("covar", j), "tmt",  rep("int", j))
   }
 
 

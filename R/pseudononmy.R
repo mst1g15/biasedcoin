@@ -248,7 +248,7 @@ future <- function(D.fix, n.r,   sim, int, z.probs,lossfunc,  ...){
 #'
 #' @export
 
-simfuture <- function(covar, k, sim,  int=NULL,  z.probs, lossfunc, stoc=T, same.start=NULL, coordex=NULL, ... ){
+simfuture <- function(covar, sim,  int=NULL,  z.probs, lossfunc, stoc=T, same.start=NULL, coordex=NULL, ... ){
 
   n <- nrow(covar)
   j <- ncol(covar)

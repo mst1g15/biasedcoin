@@ -12,7 +12,7 @@
 #' @param t.next treatment of future unit
 #' @param z.now vector of covariate values for current unit
 #' @param t.now treatment of current unit
-#' @param z.probs vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
+#' @param zp vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
 #' @param N natural number greater than 0 for horizon
 #' @param design design matrix constructed for all units up until the current unit
 #' @param int set to NULL if there are no interactions, set to T of there are interactions
@@ -26,7 +26,7 @@
 #'
 #' @export
 #'
-future.loss <- function(z.next, t.next, z.probs, N, design, int, lossfunc, beta, y, bayes, ...){
+future.loss <- function(z.next, t.next, zp, N, design, int, lossfunc, beta, y, bayes, dyn=NULL, ...){
 
   if (!is.null(int)) {
     design.next <- rbind(design, c(1, z.next, t.next, z.next*t.next))
@@ -40,7 +40,13 @@ future.loss <- function(z.next, t.next, z.probs, N, design, int, lossfunc, beta,
 
     loss <- lossfunc(Imat.beta(design.next, beta), ...)
 
-  } else{ loss <- exp.loss( z.now=z.next, t.now=t.next, z.probs, N-1, design, int, lossfunc, beta, y, bayes, ...)
+  } else{
+    if (!is.null(dyn)){
+
+      dyn <- dyn+1
+    }
+
+    loss <- exp.loss( z.now=z.next, t.now=t.next, zp, N-1, design, int, lossfunc, beta, y, bayes,dyn,  ...)
 
 
 
@@ -62,7 +68,7 @@ future.loss <- function(z.next, t.next, z.probs, N, design, int, lossfunc, beta,
 
 #' @param z.now vector of covariate values for current unit
 #' @param t.now treatment of current unit
-#' @param z.probs vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
+#' @param zp vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
 #' @param N natural number greater than 0 for horizon
 #' @param design design matrix constructed for all units up until the current unit
 #' @param int set to NULL if there are no interactions, set to T of there are interactions
@@ -78,7 +84,7 @@ future.loss <- function(z.next, t.next, z.probs, N, design, int, lossfunc, beta,
 #' @export
 #'
 
-future.y <- function(y.now, z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, bayes,...){
+future.y <- function(y.now, z.now, t.now, zp, N, design, int, lossfunc, beta, y, bayes, dyn=NULL, ...){
 
   if(!is.null(int)){
     d.now <- c(1, z.now, t.now, z.now*t.now)
@@ -109,16 +115,21 @@ future.y <- function(y.now, z.now, t.now, z.probs, N, design, int, lossfunc, bet
   names(all.z) <- NULL
 
   #for each possible covariate value, calculate loss when t.next=1
-  loss.p <- apply(all.z, 1, future.loss , t.next=1, z.probs, N, design, int, lossfunc, sim.beta, sim.y, bayes, ...)#loss for each covariate combination when the future patient has tmt=1
+  loss.p <- apply(all.z, 1, future.loss , t.next=1, zp, N, design, int, lossfunc, sim.beta, sim.y, bayes, dyn, ...)#loss for each covariate combination when the future patient has tmt=1
 
   #for each possible covariate value, calculate loss when t.next=1
-  loss.m <- apply(all.z, 1, future.loss , t.next=-1, z.probs, N, design, int, lossfunc, sim.beta, sim.y, bayes, ...) #loss for each covariate combination when the future patient has tmt=-1
+  loss.m <- apply(all.z, 1, future.loss , t.next=-1, zp, N, design, int, lossfunc, sim.beta, sim.y, bayes, dyn, ...) #loss for each covariate combination when the future patient has tmt=-1
 
   #find loss for optimal treatment (t*) for each possible covariate value
   loss <- ifelse(loss.p < loss.m, loss.p, loss.m)
 
   #expected loss: weighed according to probabilities of each covariate value
-  exploss <- sum(loss*z.probs)
+  if (!is.null(dyn)){
+    exploss <- sum(loss*zp[dyn,])
+  }else{
+    exploss <- sum(loss*zp)
+
+  }
 
 
   return(exploss)
@@ -136,7 +147,7 @@ future.y <- function(y.now, z.now, t.now, z.probs, N, design, int, lossfunc, bet
 #'
 #' @param z.now vector of covariate values for current unit
 #' @param t.now treatment of current unit
-#' @param z.probs vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
+#' @param zp vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
 #' @param N natural number greater than 0 for horizon
 #' @param design design matrix constructed for all units up until the current unit
 #' @param int set to NULL if there are no interactions, set to T of there are interactions
@@ -150,7 +161,7 @@ future.y <- function(y.now, z.now, t.now, z.probs, N, design, int, lossfunc, bet
 #'
 #' @export
 #'
-exp.loss <- function(z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, bayes,...){
+exp.loss <- function(z.now, t.now, zp, N, design, int, lossfunc, beta, y, bayes, dyn=NULL, ...){
 
   #probability that y.now=1
   if(!is.null(int)){
@@ -160,10 +171,10 @@ exp.loss <- function(z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, b
   }
 
   #expected loss, given y.now=1
-  loss1 <- future.y(y.now=1, z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, bayes, ...)
+  loss1 <- future.y(y.now=1, z.now, t.now, zp, N, design, int, lossfunc, beta, y, bayes, dyn, ...)
 
   #expected loss, given y.now=1
-  loss0 <- future.y(y.now=0, z.now, t.now, z.probs, N, design, int, lossfunc, beta, y,bayes, ...)
+  loss0 <- future.y(y.now=0, z.now, t.now, zp, N, design, int, lossfunc, beta, y,bayes, dyn, ...)
 
   #weighted by probability that P(y=1)
   exp.loss<- pi*loss1 + (1-pi)*loss0
@@ -185,7 +196,7 @@ exp.loss <- function(z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, b
 #' @param true.beta the true parameter values of the data generating mechanism
 #' @param init the number of units in the initial design
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
-#' @param z.probs vector of probabilities for each level of covariate z
+#' @param zprobs probabilities for each covariate value being 1
 #' @param N natural number greater than 0 for horizon
 #' @param lossfunc a function for the optimality criterion to minimize
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
@@ -193,17 +204,20 @@ exp.loss <- function(z.now, t.now, z.probs, N, design, int, lossfunc, beta, y, b
 #' @param stoc set to T if treatments are allocated using a stochastic method where the probability is
 #' determined by the optimality crtierion. Set to F if treatments are allocated deterministically.
 #' @param bayes set to T if bayesglm is used instead of glm. Default prior assumed.
+#' @param u vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.
+#' @param true.bvcov if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.
 #'
 #' @return Design matrix D, all estimates of beta, final estimate of beta, responses y
 #'
 #'
 #' @export
-logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=calc.y.D, same.start=NULL, rand.start=NULL, stoc=T, bayes=T, ...){
+logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=calc.y.D, same.start=NULL, rand.start=NULL, stoc=T,
+                        bayes=T, u=NULL,  true.bvcov=NULL, dyn=NULL, ...){
 
   n <- nrow(covar)
   j <- ncol(covar) #covar must be a dataframe
 
-
+  opt <- c()
   # randomly select treatment for first unit
 
   if(!is.null(int)){
@@ -226,10 +240,15 @@ logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=
 
   }
 
-
+  rownames(design)<- NULL
 
   pi <- apply(design, 1, probi, true.beta)
-  y <- as.numeric(rbinom(init, 1, pi))   #generate first observations based on true beta
+  if (!is.null(u)){
+    y <- ifelse(u[1:init] < pi, 1, 0)
+  }else{
+    y <- as.numeric(rbinom(init, 1, pi))
+  }
+
 
   #find initial estimate of beta by using logistic regression on the first init responses
   if(bayes==T){
@@ -239,16 +258,41 @@ logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=
   }
   all.beta <- beta
 
+
+  if (is.numeric(z.probs) | is.data.frame(z.probs)){
+    zp <- zpfunc(z.probs)
+  }
+
+
   for (i in (init+1):n){
 
     if (z.probs[1]=="learn"){
-      z.probs <- learn.zprobs(design, expand.grid(rep(list(c(-1,1)),j)) , j)
+      zpl <- learn.zprobs(design, expand.grid(rep(list(c(-1,1)),j)) , j)
+      if(!is.null(dyn)){
+
+
+        Nprobs <- as.data.frame(matrix((rep(zpl, N)),  nrow=N))
+
+        dyn=1
+      }else{
+
+        Nprobs <- zpl
+      }
+
+    }else{
+      if(!is.null(dyn)){
+      Nprobs <-data.frame(zp[(i+1):(i+N),])
+
+      dyn=1
+      }else{
+        Nprobs <- zp
+      }
     }
 
 
     #allocate treatment which minimizes expected loss
-    eloss.p <- exp.loss(z.now=as.numeric(covar[i,]), t.now=1, z.probs, N, design, int, lossfunc, beta, y, bayes, ...) #expected loss for treatment 1
-    eloss.m <- exp.loss(z.now=as.numeric(covar[i,]), t.now=-1, z.probs, N, design, int , lossfunc, beta, y, bayes, ...)#expected loss for treatment -1
+    eloss.p <- exp.loss(z.now=as.numeric(covar[i,]), t.now=1, zp=Nprobs, N, design, int, lossfunc, beta, y, bayes, dyn, ...) #expected loss for treatment 1
+    eloss.m <- exp.loss(z.now=as.numeric(covar[i,]), t.now=-1,  zp=Nprobs, N, design, int , lossfunc, beta, y, bayes, dyn, ...)#expected loss for treatment -1
 
     probs <- (1/eloss.m)/(1/eloss.p+1/eloss.m)
 
@@ -278,8 +322,13 @@ logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=
     design <- as.matrix(rbind(design, as.numeric(new.d)))     #Add the new row to the design matrix
 
     pi <- probi(new.d, true.beta)       #Compute new pi
-    y <- c( y, rbinom(1, 1, pi))   #Simulate new observation
+    if (!is.null(u)){
+      new.y <- ifelse(u[i] < pi, 1, 0)
+    }else{
+      new.y <-  rbinom(1, 1, pi)
+    }
 
+   y <- c(y, new.y)
     if(bayes==T){
       beta <- coef(bayesglm (y~design[,-1], family=binomial(link="logit")))  #update beta
     }else{
@@ -287,11 +336,17 @@ logit.nonmy <- function(covar,  true.beta, init, z.probs, N, int=NULL, lossfunc=
     }
     all.beta <- rbind(all.beta, beta)                          #Store all betas
 
+  if (!is.null(true.bvcov)){
+    opt <- c(opt, lossfunc(Imat.beta(design, true.beta), ...))
+  }else{
+    opt <- c(opt, lossfunc(Imat.beta(design, beta), ...))
+  }
   }
 
-  design <- data.frame(design)
 
-  results <- list(D=design, y=y, betas=all.beta, beta = beta)
+  design <- data.frame(design)
+  rownames(design) <- NULL
+  results <- list(D=design, y=y, betas=all.beta, beta = beta, opt=opt)
 
   return(results)
 

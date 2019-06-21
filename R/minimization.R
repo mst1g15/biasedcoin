@@ -14,8 +14,7 @@ rand <- function(covar){
   tmt <- sample(c(1, -1), n, replace=T) #sample randomly
 
   #design matrix
-  D <- cbind(1, covar, tmt)
-
+  D <- cbind(1, covar=covar, tmt=tmt)
   return(D)
 
 }
@@ -129,7 +128,7 @@ min.gen <- function(covar, imb, p=2/3){
   dat$tmt[dat$tmt==0]<- -1 #we want to code the treatments 1 and -1, not 1 and 0
   dat$label <- rep(1, n)  #intercept
   D <- as.data.frame(dat)  #design matrix
-  colnames(D)<- c("intercept", "covar", "tmt")
+  colnames(D)<- c("1", "covar", "tmt")
   return(D)
 
 }
@@ -280,7 +279,7 @@ min.classic <- function(covar, p=2/3){
 
   }
 
-  D <- cbind(rep(1,n), covar, tmt) #design matrix
+  D <- cbind(rep(1,n), covar=covar, tmt=tmt) #design matrix
 
   return(list(q=q.list, D=D))
 

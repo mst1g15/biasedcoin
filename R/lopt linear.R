@@ -162,7 +162,7 @@ coord.cr <- function(covar, k, cr, cr.lossfunc, prior.scale=100){
 #'  Type 1 error, true value of power, empirical value of power.
 #'
 #' @export
-cr.des <- function(covar, true.beta, sigma, threshold,  kappa, init, cr.lossfunc, k, wt, int=T, prior.scale=100,
+cr.des <- function(covar, true.beta, true.sigma, threshold,  kappa, init, cr.lossfunc, k, wt, int=T, prior.scale=100,
                      same.start=NULL, rand.start=NULL, stoc=T, bayes=T, prior.default=T, u=NULL, ... ){
 
   n <- nrow(covar)

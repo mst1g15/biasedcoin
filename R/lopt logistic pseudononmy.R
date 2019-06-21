@@ -94,6 +94,9 @@ cr.simfuture.logis <- function(covar, true.beta, threshold, kappa, init, int, cr
   crbeta <-  cr %*% beta
   pr <- pnorm(threshold, mean= crbeta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
   wr <- t(ifelse( pr >= kappa, pr, 0))
+  true.pr <- pnorm(threshold, mean= cr %*% true.beta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, true.beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+  true.wr <- t(ifelse( true.pr > kappa, true.pr, 0))
+
   all.wr <- wr
 
 
@@ -103,8 +106,8 @@ cr.simfuture.logis <- function(covar, true.beta, threshold, kappa, init, int, cr
 
 
   if (!is.null(true.bvcov)){
-    all.lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, wr)
-    all.dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, wr)
+    all.lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, true.wr)
+    all.dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, true.wr)
 
   }else{
     all.lopt <- calc.logit.wL(Imat.beta(D, beta), cr, prior.scale, wr)
@@ -204,11 +207,12 @@ cr.simfuture.logis <- function(covar, true.beta, threshold, kappa, init, int, cr
     pr <- pnorm(threshold, mean= crbeta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
     wr <- t(ifelse( pr > kappa, pr, 0))
     all.wr <- rbind(all.wr, wr)
-
+    true.pr <- pnorm(threshold, mean= cr %*% true.beta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, true.beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+    true.wr <- t(ifelse( true.pr > kappa, true.pr, 0))
 
     if (!is.null(true.bvcov)){
-      lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, wr)
-      dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, wr)
+      lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, true.wr)
+      dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, true.wr)
 
     }else{
      lopt <- calc.logit.wL(Imat.beta(D, beta), cr, prior.scale, wr)
@@ -298,7 +302,7 @@ cr.simfuture.logis.cont <- function(covar, true.beta, threshold, kappa, init,  s
   }
 
 
-  pi <- apply( D , 1, probi, true.beta)
+  pi <- apply( D , 1, probi, t(true.beta))
 
   if (!is.null(u)){
     y <- ifelse(u[1:init] < pi, 1, 0)  #generate first observation based on true beta
@@ -323,7 +327,9 @@ cr.simfuture.logis.cont <- function(covar, true.beta, threshold, kappa, init,  s
 
   crbeta <-  cr %*% beta
   pr <- pnorm(threshold, mean= crbeta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
-  wr <- t(ifelse( pr >= kappa, pr, 0))
+  true.pr <- pnorm(threshold, mean=  cr %*% (true.beta), sd=sqrt(diag( cr%*%solve( Imat.beta(D, t(true.beta)) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+  wr <- t(ifelse( pr >= kappa, true.pr, 0))
+  true.wr <- t(ifelse( true.pr >= kappa, true.pr, 0))
   all.wr <- wr
 
 
@@ -350,11 +356,11 @@ cr.simfuture.logis.cont <- function(covar, true.beta, threshold, kappa, init,  s
 
 
     if (!is.null(true.bvcov)){
-      opt <- c(opt, wLopt.t(new.tmt, D, as.numeric(covar[i, ]), true.beta ,cr=cr, prior.scale=prior.scale, wr=wr))
+      opt <- c(opt, wLopt.t(new.tmt, D, as.numeric(covar[i, ]), t(true.beta) ,cr=cr, prior.scale=prior.scale, wr=true.wr))
 
 
     }else{
-      opt <- c(opt, wLopt.t(new.tmt, D, as.numeric(covar[i, ]), beta ,cr=cr, prior.scale=prior.scale, wr=wr))
+      opt <- c(opt, wLopt.t(new.tmt, D, as.numeric(covar[i, ]), t(beta) ,cr=cr, prior.scale=prior.scale, wr=wr))
 
     }
 
@@ -365,7 +371,7 @@ cr.simfuture.logis.cont <- function(covar, true.beta, threshold, kappa, init,  s
     D <- as.matrix(rbind(D, new.d))
 
 
-    pi <- probi(new.d, true.beta)       #Compute new pi
+    pi <- probi(new.d, t(true.beta))       #Compute new pi
     if (!is.null(u)){
       new.y <- ifelse(u[i] < pi, 1, 0)
     }else{

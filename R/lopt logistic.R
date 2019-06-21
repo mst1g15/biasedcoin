@@ -17,9 +17,9 @@ calc.logit.wL <- function(Imat, cr, prior.scale=100, wr=NULL){
 
   for (j in 1:r){
     if(is.null(wr)){
-      var[j] <- t(cr[j,])%*% solve(Imat + diag(1/prior.scale ,ncol(D))) %*% cr[j,]
+      var[j] <- t(cr[j,])%*% solve(Imat + diag(1/prior.scale ,ncol(Imat))) %*% cr[j,]
     }else{
-      var[j] <-  as.matrix(wr[j])%*%t(cr[j,])%*% solve(Imat + diag(1/prior.scale ,ncol(D))) %*% cr[j,]
+      var[j] <-  as.matrix(wr[j])%*%t(cr[j,])%*% solve(Imat + diag(1/prior.scale ,ncol(Imat))) %*% cr[j,]
 
     }
   }
@@ -165,6 +165,101 @@ calc.logit.wDA <- function(Imat, cr, prior.scale=100, wr=NULL){
 
 
 
+#' Assuming a logistic model for the response, allocate treatments using a coordinate exchange algorithm according
+#' to an information matrix-based optimality criterion.
+#' Responses are simulated assuming the true parameter values.
+#'
+#' @param covar a dataframe for the covariates
+#' @param beta an estimate for the true values of beta
+#' @param threshold the cut-off value for hypothesis tests
+#' @param kappa the value of probability at which weights are set at zero
+#' @param cr.lossfunc loss function appropriate for optimality criteria which are for linear combinations of parameters
+#' @param k the number of "outer loops" in the coordinate exchange algorithm
+#' @param wt set to T if the above lossfunction is weighted, NULL otherwise
+
+#' @return design matrix D
+#'
+#'
+#' @export
+#'
+
+
+cr.logit.coord <- function(covar, beta, threshold, kappa,cr.lossfunc=calc.logit.wL,  k, wt=NULL, ... ){
+  
+  covar <- as.data.frame(covar)
+  n <- nrow(covar)
+  j <- ncol(covar) #covar must be a dataframe
+  p <- length(beta)
+  cr1 <- matrix(0, 2^j, j+1)
+  cr2 <- expand.grid(rep(list(c(0,1)),j))
+  cr <- cbind(cr1, 1, cr2)
+  cr <- as.matrix(cr)
+  
+  if(is.null(wt)){
+    wr <- rep(1, nrow(cr))
+  }else{
+    wr <- wt
+  }
+  Djs <- list() #list to store m potential designs
+  Ms <- list() #list to store the information matrices of the m potential designs
+  for (q in 1:k){
+    
+    
+    Dj <- as.matrix(cbind(rep(1, n), covar=covar, tmt=sample(c(0,1), n, replace=T))) #design matrix with random treatment assignment
+    Dj <- cbind(Dj, Dj[,2:(j+1)]*Dj[,(j+2)])   #append interaction columns
+    
+    
+    
+    
+    repeat{
+      D <- Dj
+      
+      for (i in 1:n){
+        D[i, "tmt"] <- 1
+        D[i, (j+3):(2*j+2)] <- D[i, 2:(j+1)]  #add interactino column
+        plusD <- cr.lossfunc(Imat.beta(D, beta), cr, prior.scale, wr)  # ... needed in case lossfunc is DA
+       
+        
+        
+        D[i, "tmt"] <- 0
+        D[i, (j+3):(2*j+2)] <-  D[i, "tmt"]*D[i, 2:(j+1)]
+        
+        minusD <- cr.lossfunc(Imat.beta(D, beta), cr, prior.scale, wr)  
+                
+
+        if (plusD < minusD){
+          D[i,"tmt"] <- 1
+          D[i, (j+3):(2*j+2)] <- D[i, 2:(j+1)]
+          
+        } else {
+          
+          D[i,"tmt"] <- 0
+          
+          D[i, (j+3):(2*j+2)] <- D[i,"tmt"]* D[i, 2:(j+1)]
+          
+        }
+      }
+      
+      if (identical( cr.lossfunc(Imat.beta(D, beta), cr, prior.scale, wr)  , cr.lossfunc(Imat.beta(Dj, beta), cr, prior.scale, wr)  )) break #if no change to resulting design matrix, terminate
+      else Dj <- D
+      
+    }
+    
+    Djs[[q]] <- D
+    
+    Ms[[q]]  <- Imat.beta(D, beta)
+    
+  }
+  
+  mindet <- which.min(unlist(lapply(Ms, cr.lossfunc, cr, prior.scale, wr)))
+  
+  D <- Djs[mindet][[1]]
+  
+  
+  return(D)
+  
+}
+
 
 #' Assuming a logistic model for the response, allocate treatment sequentially based on an optimality criterion for
 #' linear combinations of parameters. Responses are simulated assuming the true parameter values.
@@ -249,6 +344,8 @@ cr.logit.des <- function(covar, true.beta, threshold, kappa, init, cr.lossfunc, 
 
   crbeta <-  cr %*% beta
   pr <- pnorm(threshold, mean= crbeta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+  true.pr <- pnorm(threshold, mean= cr %*% true.beta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+  true.wr <- t(ifelse( true.pr >= kappa, true.pr, 0))
   wr <- t(ifelse( pr >= kappa, pr, 0))
   all.wr <- wr
 
@@ -257,12 +354,12 @@ cr.logit.des <- function(covar, true.beta, threshold, kappa, init, cr.lossfunc, 
   tmtprop <- sum(D[,"tmt"]==1)/init
 
   if (!is.null(true.bvcov)){
-    all.lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, wr)
-    all.dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, wr)
+    all.lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, true.wr)
+   # all.dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, true.wr)
 
   }else{
     all.lopt <- calc.logit.wL(Imat.beta(D, beta), cr, prior.scale, wr)
-    all.dawopt <- calc.logit.wDA(Imat.beta(D,beta),  cr, prior.scale, wr)
+    #all.dawopt <- calc.logit.wDA(Imat.beta(D,beta),  cr, prior.scale, wr)
 
   }
 
@@ -345,26 +442,26 @@ cr.logit.des <- function(covar, true.beta, threshold, kappa, init, cr.lossfunc, 
     all.beta <- rbind(all.beta, beta)                          #Store all betas
     crbeta <- cr %*% beta
     pr <- pnorm(threshold, mean= crbeta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
-    wr <- t(ifelse( pr > kappa, pr, 0))
-    all.wr <- rbind(all.wr, wr)
+    true.pr <- pnorm(threshold, mean= cr %*% true.beta, sd=sqrt(diag( cr%*%solve( Imat.beta(D, beta) +diag(1/prior.scale, ncol(D)))%*% t(cr))))
+    true.wr <- t(ifelse( true.pr > kappa, true.pr, 0))
+    wr <- t(ifelse( pr >= kappa, pr, 0))
 
-    lopt <- calc.logit.wL(Imat.beta(D, beta), cr, prior.scale, wr)
-    dawopt <- calc.logit.wDA(Imat.beta(D, beta), cr, prior.scale, wr)
+    all.wr <- rbind(all.wr, wr)
 
 
 
     if (!is.null(true.bvcov)){
-      lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, wr)
-      dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, wr)
+      lopt <- calc.logit.wL(Imat.beta(D, true.beta), cr, prior.scale, true.wr)
+      #dawopt <- calc.logit.wDA(Imat.beta(D,true.beta),  cr, prior.scale, true.wr)
 
     }else{
       lopt <- calc.logit.wL(Imat.beta(D, beta), cr, prior.scale, wr)
-      dawopt <- calc.logit.wDA(Imat.beta(D,beta),  cr, prior.scale, wr)
+      #dawopt <- calc.logit.wDA(Imat.beta(D,beta),  cr, prior.scale, wr)
 
     }
 
     all.lopt <- c(all.lopt,lopt)
-    all.dawopt <- c(all.dawopt, dawopt)
+   # all.dawopt <- c(all.dawopt, dawopt)
 
 
 
@@ -377,7 +474,8 @@ cr.logit.des <- function(covar, true.beta, threshold, kappa, init, cr.lossfunc, 
   D <- data.frame(D)
 
   results <- list(D=D, y=y, all.beta=all.beta, all.wr= all.wr, beta = beta,
-                  yprop=yprop, tmtprop=tmtprop, all.lopt=all.lopt,all.dawopt= all.dawopt,
+                  yprop=yprop, tmtprop=tmtprop, all.lopt=all.lopt,
+                  #all.dawopt= all.dawopt,
                   loss.p=loss.p, loss.m=loss.m)
 
   return(results)

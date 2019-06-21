@@ -65,6 +65,26 @@ calc.y.D <- function(I,  epsilon=0.00001){
 
 
 
+#' Compute the A-optimality criterion of the information matrix for logistic regression
+#'
+#' @param I the information matrix
+#' @param epsilon a small real number used for regularization. If set to zero,
+#' no regularization takes place
+#' @return A-optimality of the information matrix
+#'
+#' @export
+#'
+calc.y.A <- function(I,  epsilon=0.00001){
+
+  k <- ncol(I)
+  I <- as.matrix(I)
+  M <- solve(I + diag(k)*epsilon)
+  D <- sum(diag(M))
+
+  return(D)
+}
+
+
 
 
 #' Compute the D-optimality criterion of the information matrix for logistic regression with an added row of the design matrix
@@ -83,15 +103,16 @@ calc.y.D <- function(I,  epsilon=0.00001){
 #'
 Dopt.y.t <- function(t, D, z, int, beta, epsilon=0.00001){
   k <- ncol(D)
-  if (!is.null(int)){
+  if (!is.null(int)&length(z)==1){
     new.d <-c(1, z, t, z*t)
-  }else{
+  }else if (!is.null(int)&length(z)>1){
+    new.d <-cbind(1, z, t, t%*%as.matrix(z))
+  }else {
     new.d <-as.matrix(cbind(1, z, t))
   }
 
-
-  #rownames(new.d) <- rownames(D)
-  #colnames(new.d) <- colnames(D)
+  row.names(new.d) <- rownames(D) <- NULL
+  colnames(new.d) <- colnames(D)
   X <- as.matrix(rbind(D, new.d))
   p <- apply(X, 1, probi, beta=beta)  #calculate p(Y=1) for each row of the design matrix
   W <- diag(p * (1 - p))   #weights
@@ -412,6 +433,7 @@ logit.des <- function(covar, true.beta, init, int=NULL, lossfunc=calc.y.D,  same
     }
 
 
+    #cat(d.plus, d.minus, "\n")
 
 
     loss.p <- c(loss.p, d.plus)
@@ -560,7 +582,7 @@ logit.cont <- function(covar, true.beta, init, int=NULL, lossfunc=Dopt.y.t,  sam
   for (i in (init+1):n){
 
 
-    findopt <- optim(par=runif(1, min=-1, max=1), fn=Dopt.y.t,  D=D, z=as.numeric(covar[i, ]), int=int, beta =beta, method="L-BFGS-B",lower=-1, upper=1)
+    findopt <- optim(par=runif(1, min=-1, max=1), fn=Dopt.y.t,  D=D, z=(covar[i, ]), int=int, beta =beta, method="L-BFGS-B",lower=-1, upper=1)
 
     new.tmt <- findopt$par
 
@@ -568,7 +590,7 @@ logit.cont <- function(covar, true.beta, init, int=NULL, lossfunc=Dopt.y.t,  sam
 
 
     if (!is.null(true.bvcov)){
-      new.opt <- Dopt.y.t(t=new.tmt, D=D, z=as.numeric(covar[i, ]), int=int, beta =true.beta)
+      new.opt <- Dopt.y.t(t=as.numeric(new.tmt), D=D, z=(covar[i, ]), int=int, beta =(true.beta))
     }else{
       new.opt <- findopt$value
     }
@@ -692,7 +714,6 @@ logit.coord <- function(covar, beta, k, int=NULL, code=NULL, lossfunc=calc.y.D, 
           D[i, (j+3):(2*j+2)] <- D[i, 2:(j+1)]  #add interactino column
         }
         plusD <- lossfunc(Imat.beta(D, beta), ...)  # ... needed in case lossfunc is DA
-
         if (!is.null(code)){
           D[i, "tmt"] <- 0
         }else{
@@ -705,7 +726,6 @@ logit.coord <- function(covar, beta, k, int=NULL, code=NULL, lossfunc=calc.y.D, 
           D[i, (j+3):(2*j+2)] <-  D[i, "tmt"]*D[i, 2:(j+1)]
         }
         minusD <- lossfunc(Imat.beta(D, beta), ...)
-
         if (plusD < minusD){
           D[i,"tmt"] <- 1
           if (!is.null(int)){
@@ -727,7 +747,7 @@ logit.coord <- function(covar, beta, k, int=NULL, code=NULL, lossfunc=calc.y.D, 
         }
       }
 
-      if (identical(D, Dj)) break #if no change to resulting design matrix, terminate
+      if (identical(lossfunc(Imat.beta(D, beta), ...), lossfunc(Imat.beta(Dj, beta), ...))) break #if no change to resulting design matrix, terminate
       else Dj <- D
 
     }
@@ -737,7 +757,6 @@ logit.coord <- function(covar, beta, k, int=NULL, code=NULL, lossfunc=calc.y.D, 
     Ms[[q]]  <- Imat.beta(D, beta)
 
   }
-
 
   mindet <- which.min(unlist(lapply(Ms, lossfunc, ...)))
 

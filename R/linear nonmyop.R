@@ -17,7 +17,7 @@ learn.zprobs <- function(D, all.z, j){
   z.probs <- cbind(1:(2^j), rep(0, 2^j))
   z.probs[as.numeric(levels(freq$occ)), 2] <- freq[,2]
   z.probs <- z.probs[,2]
-
+   #only work a single dynamic covar
   return(z.probs)
 
 }
@@ -31,13 +31,12 @@ learn.zprobs <- function(D, all.z, j){
 #' @param t.next treatment of future unit
 #' @param z.now vector of covariate values for current unit
 #' @param t.now treatment of current unit
-#' @param z.probs vector of probabilities for each level of covariate z
+#' @param zp vector of probabilities for each level of covariate z (needs to in the same order as all.z)
 #' @param N natural number greater than 0 for horizon
 #' @param design design matrix constructed for all units up until the current unit
 #' @param int set to NULL if there are no interactions, set to T of there are interactions
 #' @param lossfunc  a function for the optimality criterion to minimize
-#' @param dyn set to NULL of there are no dynamic covariates, set to T if there are dynamic covariates
-#' @param Nprobs a counter to be used if there are dynamic covariates
+#' @param dyn set to NULL of there are no dynamic covariates, set to a real number if there are dynamic covariates
 
 #' @return optimality one step ahead in the future, assuming z.next and t.next
 #'
@@ -46,7 +45,7 @@ learn.zprobs <- function(D, all.z, j){
 #'
 
 
-future.loss.k <- function(z.next, t.next, z.now, t.now, z.probs, N, design, int, lossfunc, dyn=NULL, Nprobs=NULL, ...){
+future.loss.k <- function(z.next, t.next, z.now, t.now, zp, N, design, int, lossfunc, dyn=NULL,  ...){
 
   if (is.null(int)){
     # for the case of no interactions
@@ -59,16 +58,17 @@ future.loss.k <- function(z.next, t.next, z.now, t.now, z.probs, N, design, int,
 
   #if k==1, calculate the of the above design matrix.
   #Else, calculate expected loss going one step ahead into the future. #regularization used
-  loss <- if (N==1) {lossfunc(design, ...)} else {
+ if (N==1) { loss <- lossfunc(design, ...)
+ } else {
 
     if (!is.null(dyn)){
 
       dyn <- dyn+1
-      z.probs <- Nprobs[dyn, ]
     }
 
 
-    exp.loss.k(z.now=z.next, t.now=t.next, z.probs, N-1, design=rbind(design, c(1, z.now, t.now)), int, lossfunc, dyn, Nprobs, ...)}
+    loss <- exp.loss.k(z.now=z.next, t.now=t.next, zp, N-1, design=rbind(design, c(1, z.now, t.now)), int, lossfunc, dyn, ...)
+    }
 
   return(loss)
 }
@@ -83,20 +83,19 @@ future.loss.k <- function(z.next, t.next, z.now, t.now, z.probs, N, design, int,
 
 #' @param z.now vector of covariate values for current unit
 #' @param t.now treatment of current unit
-#' @param z.probs vector of probabilities for each level of covariate z (needs to in the same order as all.z below)
+#' @param zp vector of probabilities for each level of covariate z (needs to in the same order as all.z)
 #' @param N natural number greater than 0 for horizon
 #' @param design design matrix constructed for all units up until the current unit
 #' @param int set to NULL if there are no interactions, set to T of there are interactions
 #' @param lossfunc  a function for the optimality criterion to minimize
 #' @param dyn set to NULL of there are no dynamic covariates, set to T if there are dynamic covariates
-#' @param Nprobs a counter to be used if there are dynamic covariates
 #' @return design matrix D
 #'
 #'
 #' @export
 #'
 
-exp.loss.k <- function(z.now, t.now, z.probs, N, design, int, lossfunc, dyn=NULL, Nprobs=NULL, ...){
+exp.loss.k <- function(z.now, t.now, zp, N, design, int, lossfunc, dyn=NULL,  ...){
 
   #all possible combinations of levels for k binary covariates
   if(!is.null(int)){
@@ -108,12 +107,19 @@ exp.loss.k <- function(z.now, t.now, z.probs, N, design, int, lossfunc, dyn=NULL
   names(all.z) <- NULL
 
 
-  loss.p <- apply(all.z, 1, future.loss.k, t.next=1, z.now, t.now, z.probs, N, design, int, lossfunc , dyn, Nprobs,  ...)#loss for each covariate combination when the future patient has tmt=1
-  loss.m <- apply(all.z, 1, future.loss.k, t.next=-1, z.now, t.now, z.probs, N, design,int, lossfunc , dyn, Nprobs,  ...) #loss for each covariate combination when the future patient has tmt=-1
+  loss.p <- apply(all.z, 1, future.loss.k, t.next=1, z.now, t.now, zp, N, design, int, lossfunc , dyn,  ...)#loss for each covariate combination when the future patient has tmt=1
+  loss.m <- apply(all.z, 1, future.loss.k, t.next=-1, z.now, t.now, zp, N, design,int, lossfunc , dyn,  ...) #loss for each covariate combination when the future patient has tmt=-1
 
   loss <- ifelse(loss.p < loss.m, loss.p, loss.m)   #optimal value loss for each covariate combination when future patient has z=z.now
 
-  exploss <- sum(loss*z.probs) #expected loss: weighed according to probabilities of each level of z
+  if (!is.null(dyn)){
+    exploss <- sum(loss*zp[dyn,])
+  }else{
+    exploss <- sum(loss*zp)
+
+  }
+
+ #expected loss: weighed according to probabilities of each level of z
 
   return(exploss)
 }
@@ -124,7 +130,7 @@ exp.loss.k <- function(z.now, t.now, z.probs, N, design, int, lossfunc, dyn=NULL
 #' We assume a linear model for the response and simulate responses sequentially.
 #' @param covar a dataframe for the covariates
 #' @param init the number of units in the initial design
-#' @param z.probs vector of probabilities for each level of covariate z
+#' @param z.probs probability of each covariate being equal to 1
 #' @param k integer for number of "outer" loops in coordinate exchange algorithm for initial design
 #' @param N natural number greater than 0 for horizon
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
@@ -136,32 +142,32 @@ exp.loss.k <- function(z.now, t.now, z.probs, N, design, int, lossfunc, dyn=NULL
 #'
 #'
 #' @export
-linear.nonmyop <- function(covar, init, z.probs, k, N, int=NULL , lossfunc=calc.D, stoc, ... ){
-  #purpose: allocates treatments using nonmyoptic algorithm
-  #inputs:  n: total number of patients
-  #         N: natural number greater than 0 for horizon
-  #         init: number of patients in initial starting design
-  #         z.probs: vector of probabilities for each level of z
-  #output:  design matrix
+linear.nonmyop <- function(covar, init, z.probs, k=NULL, N, int=NULL , lossfunc=calc.D, stoc, ... ){
+
 
   n <- nrow(covar)
   k <- ncol(covar)
   names(covar) <- NULL
-
+  opt <- c()
   #initial starting design with init patients. Constructed using coordinate exchange algorithm with D-A optimality
 
-  design <- coordex(as.data.frame(covar[1:init,]), k, lossfunc, int)
+  design <- coordex(as.data.frame(covar[1:init,]), k, lossfunc, int, ...)
 
+  if (!is.character(z.probs)){
+      zp <- zpfunc(z.probs)
+  }
 
-  for (i in 1:(n-init)){
+  for (i in (init+1):(n-1)){
 
     if (z.probs[1]=="learn"){
-      z.probs <- learn.zprobs(design=design, all.z = expand.grid(rep(list(c(-1,1)),k)) , k)
+      z.probs <- learn.zprobs(D=design, all.z = expand.grid(rep(list(c(-1,1)),k)) , k)
+      zp <- zpfunc(z.probs)
     }
 
+
     #allocate n-init patients by choosing treatment which minimizes expected loss
-    eloss.p <- exp.loss.k(z.now=as.numeric(covar[(init+i),]), t.now=1, z.probs, N, design, int, lossfunc, ...) #expected loss for treatment 1
-    eloss.m <- exp.loss.k(z.now=as.numeric(covar[(init+i),]), t.now=-1, z.probs, N, design, int, lossfunc,  ...)#expected loss for treatment -1
+    eloss.p <- exp.loss.k(z.now=as.numeric(covar[i,]), t.now=1, zp=zp, N, design, int, lossfunc, ...) #expected loss for treatment 1
+    eloss.m <- exp.loss.k(z.now=as.numeric(covar[i,]), t.now=-1, zp=zp, N, design, int, lossfunc,  ...)#expected loss for treatment -1
 
 
     p <- (1/eloss.p)/sum(1/eloss.p+1/eloss.m)
@@ -185,17 +191,20 @@ linear.nonmyop <- function(covar, init, z.probs, k, N, int=NULL , lossfunc=calc.
 
 
     if (is.null(int)){
-      design <- rbind(design, c(1, as.numeric(covar[(init+i),]), new.tmt)) #return design
+      design <- rbind(design, c(1, as.numeric(covar[i,]), new.tmt)) #return design
     } else {
-      design <- rbind(design, c(1, as.numeric(covar[(init+i),]), new.tmt,as.numeric(covar[(init+i),])*new.tmt))
+      design <- rbind(design, c(1, as.numeric(covar[i,]), new.tmt,as.numeric(covar[i,])*new.tmt))
     }
+
+
+    opt <- c(opt, lossfunc(design , ...))
 
   }
 
   D <- design
 
   colnames(D) <- c("intercept", rep("covar", k), "tmt")
-  return(D)
+  return(list(D=D, opt=opt))
 
 }
 
@@ -222,21 +231,39 @@ linear.nonmyop.dyn <- function(covar, init, z.probs, k, N, int=NULL , lossfunc=c
 
 
   n <- nrow(covar)
+  j <- ncol(covar)
   names(covar) <- NULL
+  opt <- c()
   #initial starting design with init patients. Constructed using coordinate exchange algorithm with D-A optimality
 
-  design <- coordex(as.data.frame(covar[1:init,]), k, lossfunc, int)
+  design <- coordex(as.data.frame(covar[1:init,]), k, lossfunc, int, ...)
+
+  if (!is.character(z.probs)){
+    zp <- zpfunc(z.probs)
+  }
 
 
-  for (i in 1:(n-init)){
+  for (i in (init+1):(n)){
+
+
+    if (z.probs[1]=="learn"){
+      zp <- learn.zprobs(D=design, all.z = expand.grid(rep(list(c(-1,1)),j)) , j)
+
+    Nprobs <- as.data.frame(matrix((rep(zp, N)), byrow=T, nrow=N))
+    }else{
+
+    Nprobs <-data.frame(zp[(i+1):(i+N),])
+    }
 
 
     dyn=1
-    Nprobs <-data.frame(z.probs[(i+1):(i+N),])
+
+
+
 
     #allocate n-init patients by choosing treatment which minimizes expected loss
-    eloss.p <- exp.loss.k(z.now=as.numeric(covar[(init+i),]), t.now=1, z.probs=Nprobs[1,], N, design, int, lossfunc, dyn, Nprobs, ...) #expected loss for treatment 1
-    eloss.m <- exp.loss.k(z.now=as.numeric(covar[(init+i),]), t.now=-1, z.probs=Nprobs[1,], N, design, int, lossfunc, dyn, Nprobs, ...)#expected loss for treatment -1
+    eloss.p <- exp.loss.k(z.now=as.numeric(covar[i,]), t.now=1, zp=Nprobs, N, design, int, lossfunc, dyn, ...) #expected loss for treatment 1
+    eloss.m <- exp.loss.k(z.now=as.numeric(covar[i,]), t.now=-1, zp=Nprobs, N, design, int, lossfunc, dyn, ...)#expected loss for treatment -1
 
     #opt.tmt <- ifelse(round(eloss.p, 5) < round(eloss.m, 5),  1, -1) #pick best, get rid of variability
 
@@ -260,17 +287,19 @@ linear.nonmyop.dyn <- function(covar, init, z.probs, k, N, int=NULL , lossfunc=c
     }
 
     if (is.null(int)){
-      design <- rbind(design, c(1, as.numeric(covar[(init+i),]), new.tmt)) #return design
+      design <- rbind(design, c(1, as.numeric(covar[i,]), new.tmt)) #return design
     } else {
-      design <- rbind(design, c(1, as.numeric(covar[(init+i),]), new.tmt,as.numeric(covar[(init+i),])*new.tmt))
+      design <- rbind(design, c(1, as.numeric(covar[i,]), new.tmt,as.numeric(covar[i,])*new.tmt))
     }
 
+
+    opt <- c(opt, lossfunc(design , ...))
   }
 
   D <- design
 
   colnames(D) <- c("intercept", rep("covar", k), "tmt")
-  return(D)
+  return(list(D=D, opt=opt))
 
 }
 

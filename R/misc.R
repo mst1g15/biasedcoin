@@ -73,6 +73,51 @@ gencov <- function(z.probs, n.r, code=NULL){
 
 
 
+
+
+
+
+
+
+zpfunc <- function(z.probs){
+
+  if(!is.null(dim(z.probs))){  #there are dynamic covariates
+   if (ncol(z.probs)==1){
+     zp <- cbind(1-z.probs, z.probs)
+
+   }else{
+      a <- cbind(1-z.probs[,1], z.probs[,1])
+    b <- cbind(1-z.probs[,2], z.probs[,2])
+    q <- nrow(z.probs)
+    zp <- c()
+    for (i in 1:q){
+      zp <- rbind(zp, c(outer(a[i,], b[i,])))
+    }
+
+   }
+
+
+  }else if(length(z.probs)>1){  #there are multiple covariates but they are not dynamic
+    #multiple covariates
+    a <- c(1-z.probs[1], z.probs[1])
+    b <- c(1-z.probs[2], z.probs[2])
+
+    zp <- c(outer(a,b))
+
+  }else if(length(z.probs)==1){  #there is one static covariate
+
+    zp <- c(1-z.probs, z.probs)
+
+
+  }
+
+
+  return (zp)
+
+}
+
+
+
 if(FALSE){
 
 
