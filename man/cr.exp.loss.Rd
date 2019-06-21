@@ -7,15 +7,15 @@
 2) assuming that the current response is 1
 Find the weighted average of the two cases}
 \usage{
-cr.exp.loss(z.now, t.now, z.probs, N, design, k, beta, y, cr, wr,
-  prior.scale, bayes, dyn = NULL, Nprobs = NULL, ...)
+cr.exp.loss(z.now, t.now, zp, N, design, k, beta, y, cr, wr, prior.scale,
+  bayes, dyn = NULL, Nprobs = NULL, ...)
 }
 \arguments{
 \item{z.now}{vector of covariate values for current unit}
 
 \item{t.now}{treatment of current unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
 
 \item{N}{natural number greater than 0 for horizon}
 

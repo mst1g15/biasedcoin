@@ -5,8 +5,8 @@
 \title{Assuming the currrent response, future covariate value and future treatment,
 Calculate optimality if horizon is 1. If not, iterate back to exp.loss function.}
 \usage{
-future.loss.k(z.next, t.next, z.now, t.now, z.probs, N, design, int,
-  lossfunc, dyn = NULL, Nprobs = NULL, ...)
+future.loss.k(z.next, t.next, z.now, t.now, zp, N, design, int, lossfunc,
+  dyn = NULL, ...)
 }
 \arguments{
 \item{z.next}{vector of covariate values for future unit}
@@ -17,7 +17,7 @@ future.loss.k(z.next, t.next, z.now, t.now, z.probs, N, design, int,
 
 \item{t.now}{treatment of current unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z)}
 
 \item{N}{natural number greater than 0 for horizon}
 
@@ -27,9 +27,7 @@ future.loss.k(z.next, t.next, z.now, t.now, z.probs, N, design, int,
 
 \item{lossfunc}{a function for the optimality criterion to minimize}
 
-\item{dyn}{set to NULL of there are no dynamic covariates, set to T if there are dynamic covariates}
-
-\item{Nprobs}{a counter to be used if there are dynamic covariates}
+\item{dyn}{set to NULL of there are no dynamic covariates, set to a real number if there are dynamic covariates}
 }
 \value{
 optimality one step ahead in the future, assuming z.next and t.next

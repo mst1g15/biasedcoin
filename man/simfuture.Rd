@@ -5,7 +5,7 @@
 \title{Allocate treatments according to an information matrix based optimality criterion allowing for a pseudo-nonmyopic approach.
 We assume a linear model for the response.}
 \usage{
-simfuture(covar, k, sim, int = NULL, z.probs, lossfunc, stoc = T,
+simfuture(covar, sim, int = NULL, z.probs, lossfunc, stoc = T,
   same.start = NULL, coordex = NULL, ...)
 }
 \arguments{

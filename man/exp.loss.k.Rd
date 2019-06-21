@@ -7,15 +7,15 @@
 2) future possible treatment
 Find a weighted average across all these cases}
 \usage{
-\method{exp}{loss.k}(z.now, t.now, z.probs, N, design, int, lossfunc,
-  dyn = NULL, Nprobs = NULL, ...)
+\method{exp}{loss.k}(z.now, t.now, zp, N, design, int, lossfunc,
+  dyn = NULL, ...)
 }
 \arguments{
 \item{z.now}{vector of covariate values for current unit}
 
 \item{t.now}{treatment of current unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z)}
 
 \item{N}{natural number greater than 0 for horizon}
 
@@ -26,8 +26,6 @@ Find a weighted average across all these cases}
 \item{lossfunc}{a function for the optimality criterion to minimize}
 
 \item{dyn}{set to NULL of there are no dynamic covariates, set to T if there are dynamic covariates}
-
-\item{Nprobs}{a counter to be used if there are dynamic covariates}
 }
 \value{
 design matrix D

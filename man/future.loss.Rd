@@ -5,15 +5,15 @@
 \title{Assuming the currrent response, future covariate value and future treatment,
 Calculate optimality if horizon is 1. If not, iterate back to exp.loss function.}
 \usage{
-future.loss(z.next, t.next, z.probs, N, design, int, lossfunc, beta, y,
-  bayes, ...)
+future.loss(z.next, t.next, zp, N, design, int, lossfunc, beta, y, bayes,
+  dyn = NULL, ...)
 }
 \arguments{
 \item{z.next}{vector of covariate values for future unit}
 
 \item{t.next}{treatment of future unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
 
 \item{N}{natural number greater than 0 for horizon}
 

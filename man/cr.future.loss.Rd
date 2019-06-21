@@ -5,7 +5,7 @@
 \title{Assuming the currrent response, future covariate value and future treatment,
 Calculate optimality if horizon is 1. If horizon >1, iterate back to cr.exp.loss function.}
 \usage{
-cr.future.loss(z.next, t.next, z.probs, N, design, k, beta, y, cr, wr,
+cr.future.loss(z.next, t.next, zp, N, design, k, beta, y, cr, wr,
   prior.scale, bayes, dyn = NULL, Nprobs = NULL, ...)
 }
 \arguments{
@@ -13,7 +13,7 @@ cr.future.loss(z.next, t.next, z.probs, N, design, k, beta, y, cr, wr,
 
 \item{t.next}{treatment of future unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
 
 \item{N}{natural number greater than 0 for horizon}
 

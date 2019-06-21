@@ -7,7 +7,7 @@
 2) future possible treatment
 Find a weighted average across all these cases}
 \usage{
-cr.future.y(y.now, z.now, t.now, z.probs, N, design, k, beta, y, cr, wr,
+cr.future.y(y.now, z.now, t.now, zp, N, design, k, beta, y, cr, wr,
   prior.scale, bayes, dyn = NULL, Nprobs = NULL, ...)
 }
 \arguments{
@@ -15,7 +15,7 @@ cr.future.y(y.now, z.now, t.now, z.probs, N, design, k, beta, y, cr, wr,
 
 \item{t.now}{treatment of current unit}
 
-\item{z.probs}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
+\item{zp}{vector of probabilities for each level of covariate z (needs to in the same order as all.z below)}
 
 \item{N}{natural number greater than 0 for horizon}
 

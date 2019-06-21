@@ -7,7 +7,8 @@ We assume a logistic model for the response and simulate responses sequentially.
 \usage{
 logit.nonmy(covar, true.beta, init, z.probs, N, int = NULL,
   lossfunc = calc.y.D, same.start = NULL, rand.start = NULL,
-  stoc = T, bayes = T, ...)
+  stoc = T, bayes = T, u = NULL, true.bvcov = NULL, dyn = NULL,
+  ...)
 }
 \arguments{
 \item{covar}{a dataframe for the covariates}
@@ -15,8 +16,6 @@ logit.nonmy(covar, true.beta, init, z.probs, N, int = NULL,
 \item{true.beta}{the true parameter values of the data generating mechanism}
 
 \item{init}{the number of units in the initial design}
-
-\item{z.probs}{vector of probabilities for each level of covariate z}
 
 \item{N}{natural number greater than 0 for horizon}
 
@@ -32,6 +31,12 @@ logit.nonmy(covar, true.beta, init, z.probs, N, int = NULL,
 determined by the optimality crtierion. Set to F if treatments are allocated deterministically.}
 
 \item{bayes}{set to T if bayesglm is used instead of glm. Default prior assumed.}
+
+\item{u}{vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.}
+
+\item{true.bvcov}{if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.}
+
+\item{zprobs}{probabilities for each covariate value being 1}
 }
 \value{
 Design matrix D, all estimates of beta, final estimate of beta, responses y

@@ -5,14 +5,17 @@
 \title{Assuming a linear model for the response, allocate treatment sequentially based on an optimality criterion for
 linear combinations of parameters. Responses are simulated assuming the true parameter values.}
 \usage{
-cr.des(covar, true.beta, sigma, threshold, kappa, init, cr.lossfunc, k, wt,
-  int = T, prior.scale = 100, same.start = NULL, rand.start = NULL,
-  stoc = T, bayes = T, prior.default = T, u = NULL, ...)
+cr.des(covar, true.beta, true.sigma, threshold, kappa, init, cr.lossfunc,
+  k, wt, int = T, prior.scale = 100, same.start = NULL,
+  rand.start = NULL, stoc = T, bayes = T, prior.default = T,
+  u = NULL, ...)
 }
 \arguments{
 \item{covar}{a dataframe for the covariates}
 
 \item{true.beta}{the true parameter values of the regression coefficients}
+
+\item{true.sigma}{the true parameter value for the standard deviation}
 
 \item{threshold}{the cut-off value for hypothesis tests}
 
@@ -42,8 +45,6 @@ determined by the optimality crtierion. Set to F if treatments are allocated det
 \item{prior.default}{set to T if default priors for bayesglm is used. If set to False and bayes=T, normal priors used.}
 
 \item{u}{vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.}
-
-\item{true.sigma}{the true parameter value for the standard deviation}
 }
 \value{
 design matrix D, responses y, all estimates of betas, final estimate of beta, all weights, all estimates of standard deviation,

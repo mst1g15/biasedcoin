@@ -6,7 +6,8 @@
 We assume a logistic model for the response and simulate responses sequentially.}
 \usage{
 logit.Lbnon(covar, true.beta, threshold, kappa, init, z.probs, N,
-  prior.scale = 100, stoc = T, bayes = T, ...)
+  prior.scale = 100, same.start = NULL, rand.start = NULL,
+  stoc = T, bayes = T, u = NULL, true.bvcov = NULL, ...)
 }
 \arguments{
 \item{covar}{a dataframe for the covariates}
@@ -25,10 +26,18 @@ logit.Lbnon(covar, true.beta, threshold, kappa, init, z.probs, N,
 
 \item{prior.scale}{the prior scale parameter}
 
+\item{same.start}{the design matrix to be used for the initial design. If set to NULL, function generates initial design.}
+
+\item{rand.start}{If set to T, function generates an initial design randomly. Else, coordinate exchange is used.}
+
 \item{stoc}{set to T if treatments are allocated using a stochastic method where the probability is
 determined by the optimality crtierion. Set to F if treatments are allocated deterministically.}
 
 \item{bayes}{set to T if bayesglm is used instead of glm. Default prior assumed.}
+
+\item{u}{vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.}
+
+\item{true.bvcov}{if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.}
 }
 \value{
 Design matrix D, all estimates of beta, final estimate of beta, responses y

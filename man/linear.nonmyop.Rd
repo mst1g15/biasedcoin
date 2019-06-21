@@ -5,7 +5,7 @@
 \title{Allocate treatments according to an information matrix based optimality criterion allowing for a non-myopic approach.
 We assume a linear model for the response and simulate responses sequentially.}
 \usage{
-linear.nonmyop(covar, init, z.probs, k, N, int = NULL,
+linear.nonmyop(covar, init, z.probs, k = NULL, N, int = NULL,
   lossfunc = calc.D, stoc, ...)
 }
 \arguments{
@@ -13,7 +13,7 @@ linear.nonmyop(covar, init, z.probs, k, N, int = NULL,
 
 \item{init}{the number of units in the initial design}
 
-\item{z.probs}{vector of probabilities for each level of covariate z}
+\item{z.probs}{probability of each covariate being equal to 1}
 
 \item{k}{integer for number of "outer" loops in coordinate exchange algorithm for initial design}
 
