@@ -92,6 +92,7 @@ calc.vcov <- function( beta, D, epsilon=0.00001, true.bvcov=NULL){
 #' @param beta the current estimates of the parameter values
 #' @param D current design matrix
 #' @param y vector of responses
+#' @param sim number of simulated betas to generate
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
 #' @param true.bvcov set to the true values of beta if the var-covar matrix is to be computed using the true values
@@ -115,6 +116,9 @@ calc.mse <- function(beta, D, y, sim, epsilon=0.00001, true.bvcov=NULL){
 
   return(mse)
 }
+
+
+if(FALSE){
 
 #taken from sim nony func logis.R with some more bits added to output
 ###### edit this one in the logit file
@@ -142,7 +146,7 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
   }
   opt <- yprop.tot <- yprop <- tmtprop <- c()
   all.a.mse <- all.a.bias <- all.d.mse <- all.a.var <- all.beta <- c()
-  all.bias <- all.var <- list() 
+  all.bias <- all.var <- list()
 
   #starting design
   if (!is.null(same.start)) {
@@ -174,10 +178,10 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
   mse  <- varcov + bias
   a.mse <- sum(diag(mse))
   d.mse <- det(mse)
-  
+
   all.bias <- c(all.bias, list(bias))
   all.var <- c(all.var, list(varcov))
-  
+
 
   for (i in (init+1):n){
 
@@ -234,10 +238,10 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
     mse  <- varcov + bias
     a.mse <- sum(diag(mse))
     d.mse <- det(mse)                  #Store all betas
-    
+
     all.bias <- c(all.bias, list(bias))
     all.var <- c(all.var, list(varcov))
-    
+
     if (!is.null(true.bvcov)){
 
     opt <- c(opt, lossfunc(Imat.beta(D, true.bvcov), ...))
@@ -273,7 +277,7 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
                   #yprop=yprop,
                   yprop.tot=yprop.tot,
                   opt=opt,  all.a.bias=all.a.bias,  all.a.var = all.a.var,
-                   all.a.mse = all.a.mse, all.d.mse = all.d.mse, 
+                   all.a.mse = all.a.mse, all.d.mse = all.d.mse,
                   all.bias=all.bias, all.var =all.var
                   #, finalprop=finalprop
   )
@@ -283,7 +287,7 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
 }
 
 
-
+}
 
 
 #' Allocate treatments according to the MSE matrix when a logisic model for the response is assumed.
@@ -293,24 +297,25 @@ logit.des.bayes <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=cal
 #' @param true.beta the true parameter values of the data generating mechanism
 #' @param init the number of units in the initial design
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc a function for the objective function to minimize
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
 #' @param true.bvcov set to the true values of beta if the mse matrix is to be computed using the true values
-#' @param same.start set to the intial design if desired or set to NULL otherwise #' 
+#' @param same.start set to the intial design if desired or set to NULL otherwise
+#' @param ... further arguments to be passed to <logit.coord> and <lossfunc>
 #' @return the design matrix D, responses y, all estimates of beta, final estimate of beta, probabilities of treatment
-#' assignment, proportion of favorable responses, optimality, trace of var-covar matrix, trace of bias matrix,
+#' assignment, proportion of favorable responses, value of objective function, trace of var-covar matrix, trace of bias matrix,
 #' trace of mse matrix, determinant of mse matrix
 #'
 #' @export
 
-logit.mse <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=calc.y.D, epsilon=0.00001,  same.start=NULL,true.bvcov=NULL,...){
+logit.mse <- function(covar,  true.beta, init, int=NULL, lossfunc=calc.y.D, epsilon=0.00001,  same.start=NULL,true.bvcov=NULL,...){
   #purpose:
   #input:   covar: dataframe of of covariate values
   #         true.beta: true parameter values
   #         init: the number of observations to include in the preliminary design
   #         int: indicates that you want to include all tmt-cov interactions
-  #         lossfunc: is the optimality criterion
+  #         lossfunc: objective function
 
 
   n <- nrow(covar)
@@ -323,12 +328,12 @@ logit.mse <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=calc.y.D,
   }else{
     beta <- rep(0, j+2)
   }
-    
+
   if (!is.null(same.start)){
     D <- same.start
   }else{
-    
-    
+
+
      if (!is.null(int)) {
       D <-  logit.coord(covar[1:init,], beta, 2, int=T, lossfunc, ...)
     }else{
@@ -336,7 +341,7 @@ logit.mse <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=calc.y.D,
 
     }
 
-    
+
   }
 
   pi <- apply(D, 1, probi, true.beta)
@@ -351,10 +356,10 @@ logit.mse <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=calc.y.D,
   a.var <-  sum(diag(varcov))
   bias  <- calc.bias(beta, D, sim, true.bvcov)
   a.bias <- sum(diag(bias))
-  
+
   all.bias <- c(all.bias, list(bias))
   all.var <- c(all.var, list(varcov))
-  
+
   mse  <- varcov + bias
   a.mse <- sum(diag(mse))
   d.mse <- det(mse)
@@ -415,10 +420,10 @@ logit.mse <- function(covar,  true.beta, init, int=NULL, sim, lossfunc=calc.y.D,
     mse  <- varcov + bias
     a.mse <- sum(diag(mse))
     d.mse <- det(mse)
-    
+
     all.bias <- c(all.bias, list(bias))
     all.var <- c(all.var, list(varcov))
-    
+
     all.betas <- rbind(all.betas, beta)                          #Store all betas
     if (!is.null(true.bvcov)){
 

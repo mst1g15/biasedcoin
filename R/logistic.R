@@ -1,5 +1,3 @@
-library("arm")
-library("prodlim")
 
 #' Compute P(y=1) for logistic regression
 #'
@@ -44,12 +42,12 @@ Imat.beta <- function(X, beta){
 
 
 
-#' Compute the D-optimality criterion of the information matrix for logistic regression
+#' Given an information matrix and assuming logistic regression, compute the D-optimal objective function
 #'
 #' @param I the information matrix
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return D-optimality of the information matrix
+#' @return value of the D-optimal objective function
 #'
 #' @export
 #'
@@ -65,12 +63,13 @@ calc.y.D <- function(I,  epsilon=0.00001){
 
 
 
-#' Compute the A-optimality criterion of the information matrix for logistic regression
+
+#' Given an information matrix and assuming logistic regression, compute the A-optimal objective function
 #'
 #' @param I the information matrix
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return A-optimality of the information matrix
+#' @return value of the A-optimal objective function
 #'
 #' @export
 #'
@@ -87,7 +86,7 @@ calc.y.A <- function(I,  epsilon=0.00001){
 
 
 
-#' Compute the D-optimality criterion of the information matrix for logistic regression with an added row of the design matrix
+#' Given a design matrix with an additional row, and assuming assuming logistic regression, compute the D-optimal objective function
 #' (to be used in conjunction with optim)
 #'
 #' @param t new treatment
@@ -97,7 +96,7 @@ calc.y.A <- function(I,  epsilon=0.00001){
 #' @param beta current estimate of regression parameters
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return D-optimality criterion
+#' @return value of the D-optimal objective function
 #'
 #' @export
 #'
@@ -124,16 +123,16 @@ Dopt.y.t <- function(t, D, z, int, beta, epsilon=0.00001){
 
 
 
-#' Compute the D-optimality criterion of of an initial design for logistic regression
+#' Given an initial design and assuming logistic regression, compute the D-optimal objective function
 #' (to be used in conjunction with optim)
 #'
 #' @param t vector of treatments
-#' @param vector of covariate values
+#' @param z vector of covariate values
 #' @param int set to TRUE if treatment-covariate interactions are included in the model
 #' @param beta current estimate of regression parameters
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return D-optimality criterion
+#' @return value of the D-optimal objective function
 #'
 #' @export
 Dopt.y.t.init <- function(t, z, int, beta, epsilon=0.00001){
@@ -157,11 +156,11 @@ Dopt.y.t.init <- function(t, z, int, beta, epsilon=0.00001){
 
 
 
-#' Compute the G-optimality criterion of the information matrix for logistic regression
+#' Given an information matrix and assuming logistic regression, compute the G-optimal objective function
 #' @param I the information matrix
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return G-optimality of the information matrix
+#' @return value of the G-optimal objective function
 #'
 #' @export
 #'
@@ -178,12 +177,12 @@ calc.y.G <- function(I, epsilon=0.00001){
 }
 
 
-#' Compute the DA-optimality criterion of the information matrix for logistic regression
+#' Given an information matrix and assuming logistic regression, compute the D-A optimal objective function
 #' @param I the information matrix
 #' @param A a matrix where each column indicates the linear combination of parameters of interest
 #' @param epsilon a small real number used for regularization. If set to zero,
 #' no regularization takes place
-#' @return DA-optimality of the information matrix
+#' @return value of the D-A optimal objective function
 #'
 #' @export
 calc.y.DA <- function(I, A=t(matrix(c(0, 0, 1))), epsilon=0.00001){
@@ -209,15 +208,16 @@ calc.y.DA <- function(I, A=t(matrix(c(0, 0, 1))), epsilon=0.00001){
 #' @param true.beta the true parameter values of the data generating mechanism
 #' @param init the number of units in the initial design
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
 #' @param rand.start If set to T, function generates an initial design randomly. Else, coordinate exchange is used.
 #' @param bayes set to T if bayesglm is used instead of glm. Default prior assumed.
 #' @param u vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.
 #' @param true.bvcov if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.
+#' @param ... further arguments to be passed to <lossfunc>
 #'
 #' @return design matrix D, responses y, all estimates of betas, final beta, probabilities for treatment assignment,
-#' proportion of Y=1, proportion tmt=1, optimality
+#' proportion of Y=1, proportion tmt=1, values of objective function
 #'
 #'
 #' @export
@@ -343,7 +343,7 @@ logit.rand <- function(covar, true.beta, init, int=NULL, lossfunc=calc.y.D,  sam
 #' @param true.beta the true parameter values of the data generating mechanism
 #' @param init the number of units in the initial design
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
 #' @param rand.start If set to T, function generates an initial design randomly. Else, coordinate exchange is used.
 #' @param stoc set to T if treatments are allocated using a stochastic method where the probability is
@@ -351,10 +351,11 @@ logit.rand <- function(covar, true.beta, init, int=NULL, lossfunc=calc.y.D,  sam
 #' @param bayes set to T if bayesglm is used instead of glm. Default prior assumed.
 #' @param u vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.
 #' @param true.bvcov if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.
+#' @param ... further arguments to be passed to <lossfunc>
 #'
 #'
 #' @return design matrix D, responses y, all estimates of betas, final beta, probabilities for treatment assignment,
-#' proportion of Y=1, proportion tmt=1, optimality
+#' proportion of Y=1, proportion tmt=1, values of objective function
 #'
 #'
 #' @export
@@ -522,16 +523,17 @@ logit.des <- function(covar, true.beta, init, int=NULL, lossfunc=calc.y.D,  same
 #' @param true.beta the true parameter values of the data generating mechanism
 #' @param init the number of units in the initial design
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
 #' @param rand.start If set to T, function generates an initial design randomly. Else, coordinate exchange is used.
 #' @param bayes set to T if bayesglm is used instead of glm. Default prior assumed.
 #' @param u vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.
 #' @param true.bvcov if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.
+#' @param ... further arguments to be passed to <lossfunc>
 #'
 #'
 #' @return design matrix D, responses y, all estimates of betas, final beta, probabilities for treatment assignment,
-#' proportion of Y=1, proportion tmt=1, optimality
+#' proportion of Y=1, proportion tmt=1, values of objective function
 #'
 #'
 #' @export
@@ -669,7 +671,8 @@ logit.cont <- function(covar, true.beta, init, int=NULL, lossfunc=Dopt.y.t,  sam
 #' @param k an integer for the number of "outer loops"
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param code set to NULL if (-1,1) coding is used for the treatments. Set to 0 if (0, 1) is used.
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
+#' @param ... further arguments to be passed to <lossfunc>
 
 #' @return design matrix D
 #'

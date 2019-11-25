@@ -2,7 +2,6 @@
 
 #' Create a set of binary covariates with a specific covariate distribution
 #'
-#' @param mat matrix or dataframe for the design matrix
 #' @param z.probs if a scalar, assume there is one binary covariate z and
 #' the scalar is P(z=1).
 #' if z.probs is a vector of length k, there are k static covariates, z1, ..., zk, and
@@ -77,6 +76,20 @@ gencov <- function(z.probs, n.r, code=NULL){
 
 
 
+#' Given z.probs which takes a specific form, convert it to an nxp dataframe where the (i,j)th entry is the probability
+#' that the ith patient's jth covariate value is 1
+#'
+#' @param z.probs if a scalar, assume there is one binary covariate z and
+#' the scalar is P(z=1).
+#' if z.probs is a vector of length k, there are k static covariates, z1, ..., zk, and
+#' the the jth element of the vector is  P(zj=1).
+#' if z.probs is a matrix with k columns and n.r rows, there are k dynamic covariates z1, ...zk.
+#' the (i,j)th element is the probability that the jt unit of the ith covariate is equal to 1
+#'
+#' @return nxp dataframe where the (i,j)th entry is the probability
+#' that the ith patient's jth covariate value is 1
+#'
+#' @export
 
 
 zpfunc <- function(z.probs){

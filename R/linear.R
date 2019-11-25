@@ -1,7 +1,7 @@
 #design criteria
 
 
-#' Given a design matrix, calculate the loss for a linear model
+#' Given a design matrix for a linear model, compute the loss
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @param epsilon a small real number used for regularization. If set to zero,
@@ -31,12 +31,12 @@ calc.loss <- function(mat, epsilon=0.00001, int=NULL){
 }
 
 
-#' Given a design matrix, calculate the D-A optimality for a linear model
+#' Given a design matrix for a linear model, compute the D-A optimal objective function
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @param A a matrix where each column indicates the linear combination of parameters of interest
 #' @param epsilon a small real number used for regularization
-#' @return D-A optimality of the matrix
+#' @return value of the D-A optimal objective function
 #'
 #' @export
 
@@ -52,11 +52,11 @@ calc.DA <- function(mat, A=t(c(0, 0, 1, 0)), epsilon=0.00001){
 
 
 
-#' Given a design matrix, calculate the A optimality for a linear model
+#' Given a design matrix for a linear model, compute the A-optimal objective function
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @param epsilon a small real number used for regularization
-#' @return A optimality of the matrix
+#' @return value of the A optimal objective function
 #'
 #' @export
 
@@ -72,11 +72,11 @@ calc.A <- function(mat, epsilon=0.00001){
 
 
 
-#' Given a design matrix, calculate the D optimality for a linear model
+#' Given a design matrix for a linear model, compute the D-optimal objective function
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @param epsilon a small real number used for regularization
-#' @return D optimality of the matrix
+#' @return value of the D optimal objective function
 #'
 #' @export
 calc.D <- function(mat, epsilon=0.00001){
@@ -92,11 +92,12 @@ calc.D <- function(mat, epsilon=0.00001){
 
 
 
-#' Given a design matrix, calculate the G optimality for a linear model
+
+#' Given a design matrix for a linear model, compute the G-optimal objective function
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @param epsilon a small real number used for regularization
-#' @return G optimality of the matrix
+#' @return value of the G optimal objective function
 #'
 #' @export
 
@@ -117,13 +118,19 @@ calc.G <- function(mat, epsilon=0.00001){
 
 
 
+
+
+
+#' Given a design matrix for a linear model wuth treatment-covariate interaction included, compute the G-optimal objective function
+#'
+#' @param mat matrix or dataframe for the design matrix
+#' @param epsilon a small real number used for regularization
+#' @return value of the G optimal objective function
+#'
+#' @export
+
+
 calc.Gint <- function(mat, epsilon=0.00001){
-  #purpose - given a design matrix, calculate the G- optimality criterion if interaction is
-  # included in the model
-  #input: matrix or dataframe mat for the design matrix
-  #       epsilon is a tiny real number for regularization
-  #       if print==TRUE, provide variances for each of the design points
-  #ouput: a real number for the G- optimality criterion
 
   k <- ncol(mat)
   ncovar <- (k-2)/2
@@ -138,7 +145,7 @@ calc.Gint <- function(mat, epsilon=0.00001){
 }
 
 
-#' Given a design matrix, calculate the covariate balance for a linear model
+#' Given a design matrix for a linear model, calculate the covariate balance
 #'
 #' @param mat matrix or dataframe for the design matrix
 #' @return covariate balance of the matrix
@@ -166,9 +173,11 @@ calc.tz <- function(mat){
 #'
 #'
 #' @param covar a dataframe for the covariates
-#' @param k the number of "outer loops" to perform
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param k the number of random starting designs to use
+#' @param lossfunc the objective function to minimize
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
+#' @param ... Further arguments to be passed to <lossfunc>
+
 #'
 #' @return design matrix
 #'
@@ -246,17 +255,18 @@ coordex <- function(covar, k, lossfunc, int=NULL, ... ){
 
 
 
-#' Assuming a linear model for the response, allocate treatment randomly.
+#' Assuming a linear model for the response, allocate treatments randomly.
 #'
 #'
 #' @param covar a dataframe for the covariates
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param init the number of units in the initial design, by default set to 1
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
+#' @param ... further arguments to be passed to <lossfunc>
 
 #'
-#' @return design matrix and optimality at each sample size
+#' @return design matrix and value of objective function at each sample size
 #'
 #'
 #' @export
@@ -328,26 +338,21 @@ linear.rand <- function(covar, lossfunc=calc.D, int=NULL, init=1, same.start=NUL
 #'
 #'
 #' @param covar a dataframe for the covariates
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param init the number of units in the initial design, by default set to 1
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
 #' @param stoc set to T if treatments are allocated using a stochastic method where the probability is
-#' determined by the optimality crtierion. Set to F if treatments are allocated deterministically.
+#' determined by the optimality crtierion. Set to F if treatments are allocated deterministically
+#' @param ... further arguments to be passed to <lossfunc>
 #'
-#' @return design matrix and optimality at each sample size
+#' @return design matrix and value of objective function at each sample size
 #'
 #'
 #' @export
 #'
 
 atkins <- function(covar, lossfunc=calc.D, int=NULL, init=1, same.start=NULL, stoc=T, ...){
-  #purpose: use Atkinson approach to determine treatment assignment, allowing for any kind of optimality criterion,
-  #         and also allowing for interactions
-  #input: dataframe covar of covariate values
-  #       lossfunc is the optimality criterion
-  #       int is set to TRUE if you want to include the treatment-covariate interaction
-  #output: design matrix
 
 
   n <- nrow(covar)

@@ -11,11 +11,11 @@
 #' @param n the largest sample size to display on the graph
 #' @param xlabel the x axis label
 #' @param ylabel the y axis label
+#' @param ... Further arguments to be passed to <plot>
+
 #'
 #' @return None
 #'
-#' @examples
-#' shadeplot(data, 10, 100, "Sample size", "D-optimality")
 #'
 #' @export
 #'
@@ -35,4 +35,19 @@ shadeplot <- function(data, n1= 4, n=100, xlabel="", ylabel="", ... ){
   polygon(c(n1:n,n:n1),c(atkins.bal25,rev(atkins.bal75)),col="gray30",border=NA)
   lines(n1:n, atkins.bal50,lty=1,lwd=2, col="black")
 
+}
+
+
+
+
+plot_int <- function(dat){
+  
+  
+  
+  nb.beta1 <- quantile(dat, c(0.10, 0.40, 0.50, 0.60, 0.90))
+  segments(100,nb.beta1[1] , 100, nb.beta1[5], col="darksalmon", lwd=3)
+  segments(100,nb.beta1[2] , 100, nb.beta1[4], col="firebrick1", lwd=3)
+  
+  points(100, nb.beta1[3],  pch=20, cex=1.5, col="red")
+  
 }

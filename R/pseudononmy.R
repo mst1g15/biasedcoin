@@ -9,7 +9,9 @@
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param z.probs vector of probabilities for each level of covariate z
 #' @param code set to NULL if (-1,1) coding is used for the treatments. Set to 0 if (0, 1) is used.
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
+#' @param ... further arguments to be passed to <lossfunc>
+
 
 #' @return loss of the design matrix which includes trajectory
 #'
@@ -123,8 +125,8 @@ future.coordex <- function(D.fix, n.r, n,  k, sim, int, z.probs,  code=NULL, los
       mindes <- which.min(all.losses)  #find the optimum design matrix
 
       losses[q] <- all.losses[mindes]
-
-
+      all.losses[mindes]
+      print(Dms[mindes])
   }
 
   mean.loss <- mean(losses)
@@ -151,7 +153,8 @@ future.coordex <- function(D.fix, n.r, n,  k, sim, int, z.probs,  code=NULL, los
 #' @param sim number of trajectories to simulate
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param z.probs vector of probabilities for each level of covariate z
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
+#' @param ... further arguments to be passed to <lossfunc>
 
 #' @return loss of the design matrix which includes trajectory
 #'
@@ -236,14 +239,14 @@ future <- function(D.fix, n.r,   sim, int, z.probs,lossfunc,  ...){
 #' @param sim number of trajectories to simulate
 #' @param int set to T if you allow for treatment-covariate interactions in the model, NULL otherwise
 #' @param z.probs vector of probabilities for each level of covariate z
-#' @param N natural number greater than 0 for horizon
-#' @param lossfunc a function for the optimality criterion to minimize
+#' @param lossfunc the objective function to minimize
 #' @param stoc set to T if treatments are allocated using a stochastic method where the probability is
 #' determined by the optimality crtierion. Set to F if treatments are allocated deterministically.
 #' @param same.start the design matrix to be used for the initial design. If set to NULL, function generates initial design.
 #' @param coordex set to T if coordinate exchange algorithm is used to allocate treatments in the trajectory, set to NULL for sequential approach.
+#' @param ... further arguments to be passed to <lossfunc>
 #'
-#' @return Design matrix D, optimality
+#' @return Design matrix D, value of objective function
 #'
 #'
 #' @export
