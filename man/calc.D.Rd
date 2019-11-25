@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.D}
 \alias{calc.D}
-\title{Given a design matrix, calculate the D optimality for a linear model}
+\title{Given a design matrix for a linear model, compute the D-optimal objective function}
 \usage{
 calc.D(mat, epsilon = 1e-05)
 }
@@ -12,8 +12,8 @@ calc.D(mat, epsilon = 1e-05)
 \item{epsilon}{a small real number used for regularization}
 }
 \value{
-D optimality of the matrix
+value of the D optimal objective function
 }
 \description{
-Given a design matrix, calculate the D optimality for a linear model
+Given a design matrix for a linear model, compute the D-optimal objective function
 }

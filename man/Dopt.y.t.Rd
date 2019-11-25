@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic.R
 \name{Dopt.y.t}
 \alias{Dopt.y.t}
-\title{Compute the D-optimality criterion of the information matrix for logistic regression with an added row of the design matrix
+\title{Given a design matrix with an additional row, and assuming assuming logistic regression, compute the D-optimal objective function
 (to be used in conjunction with optim)}
 \usage{
 Dopt.y.t(t, D, z, int, beta, epsilon = 1e-05)
@@ -22,9 +22,9 @@ Dopt.y.t(t, D, z, int, beta, epsilon = 1e-05)
 no regularization takes place}
 }
 \value{
-D-optimality criterion
+value of the D-optimal objective function
 }
 \description{
-Compute the D-optimality criterion of the information matrix for logistic regression with an added row of the design matrix
+Given a design matrix with an additional row, and assuming assuming logistic regression, compute the D-optimal objective function
 (to be used in conjunction with optim)
 }

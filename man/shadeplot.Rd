@@ -16,14 +16,12 @@ shadeplot(data, n1 = 4, n = 100, xlabel = "", ylabel = "", ...)
 \item{xlabel}{the x axis label}
 
 \item{ylabel}{the y axis label}
+
+\item{...}{Further arguments to be passed to <plot>}
 }
 \value{
 None
 }
 \description{
 Creates a plot the distribution of a performance measure across sample size
-}
-\examples{
-shadeplot(data, 10, 100, "Sample size", "D-optimality")
-
 }

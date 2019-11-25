@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.A}
 \alias{calc.A}
-\title{Given a design matrix, calculate the A optimality for a linear model}
+\title{Given a design matrix for a linear model, compute the A-optimal objective function}
 \usage{
 calc.A(mat, epsilon = 1e-05)
 }
@@ -12,8 +12,8 @@ calc.A(mat, epsilon = 1e-05)
 \item{epsilon}{a small real number used for regularization}
 }
 \value{
-A optimality of the matrix
+value of the A optimal objective function
 }
 \description{
-Given a design matrix, calculate the A optimality for a linear model
+Given a design matrix for a linear model, compute the A-optimal objective function
 }

@@ -5,8 +5,8 @@
 \title{Calculates expected optimality for a given trajectory after allocating treatments to the trajectory with
 the coordinate exchange algorithm}
 \usage{
-future.coordex(D.fix, n.r, n, k, sim, int, z.probs, code = NULL,
-  lossfunc, ...)
+future.coordex(D.fix, n.r, n, k, sim, int, z.probs, code = NULL, lossfunc,
+  ...)
 }
 \arguments{
 \item{D.fix}{Design matrix constructed using the true covariates in the experiment so far}
@@ -25,7 +25,9 @@ future.coordex(D.fix, n.r, n, k, sim, int, z.probs, code = NULL,
 
 \item{code}{set to NULL if (-1,1) coding is used for the treatments. Set to 0 if (0, 1) is used.}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
 loss of the design matrix which includes trajectory

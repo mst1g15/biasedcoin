@@ -6,8 +6,8 @@
 Responses are simulated assuming the true parameter values.}
 \usage{
 logit.des(covar, true.beta, init, int = NULL, lossfunc = calc.y.D,
-  same.start = NULL, rand.start = NULL, stoc = T, bayes = T,
-  u = NULL, true.bvcov = NULL, ...)
+  same.start = NULL, rand.start = NULL, stoc = T, bayes = T, u = NULL,
+  true.bvcov = NULL, ...)
 }
 \arguments{
 \item{covar}{a dataframe for the covariates}
@@ -18,7 +18,7 @@ logit.des(covar, true.beta, init, int = NULL, lossfunc = calc.y.D,
 
 \item{int}{set to T if you allow for treatment-covariate interactions in the model, NULL otherwise}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
 
 \item{same.start}{the design matrix to be used for the initial design. If set to NULL, function generates initial design.}
 
@@ -32,10 +32,12 @@ determined by the optimality crtierion. Set to F if treatments are allocated det
 \item{u}{vector of uniform random numbers for generating responses. If set to NULL, responses generated from the binomial distribution.}
 
 \item{true.bvcov}{if set to T, use the true parameter values to compute obejctive function. If set to NULL, use estimated parameter values.}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
 design matrix D, responses y, all estimates of betas, final beta, probabilities for treatment assignment,
-proportion of Y=1, proportion tmt=1, optimality
+proportion of Y=1, proportion tmt=1, values of objective function
 }
 \description{
 Assuming a logistic model for the response, allocate treatment sequentially based on an information matrix-based optimality criterion.

@@ -6,8 +6,8 @@
 to an information matrix-based optimality criterion.
 Responses are simulated assuming the true parameter values.}
 \usage{
-logit.coord(covar, beta, k, int = NULL, code = NULL,
-  lossfunc = calc.y.D, ...)
+logit.coord(covar, beta, k, int = NULL, code = NULL, lossfunc = calc.y.D,
+  ...)
 }
 \arguments{
 \item{covar}{a dataframe for the covariates}
@@ -20,7 +20,9 @@ logit.coord(covar, beta, k, int = NULL, code = NULL,
 
 \item{code}{set to NULL if (-1,1) coding is used for the treatments. Set to 0 if (0, 1) is used.}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
 design matrix D

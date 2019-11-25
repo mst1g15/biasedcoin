@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.G}
 \alias{calc.G}
-\title{Given a design matrix, calculate the G optimality for a linear model}
+\title{Given a design matrix for a linear model, compute the G-optimal objective function}
 \usage{
 calc.G(mat, epsilon = 1e-05)
 }
@@ -12,8 +12,8 @@ calc.G(mat, epsilon = 1e-05)
 \item{epsilon}{a small real number used for regularization}
 }
 \value{
-G optimality of the matrix
+value of the G optimal objective function
 }
 \description{
-Given a design matrix, calculate the G optimality for a linear model
+Given a design matrix for a linear model, compute the G-optimal objective function
 }

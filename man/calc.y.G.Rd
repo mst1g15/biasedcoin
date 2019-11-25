@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic.R
 \name{calc.y.G}
 \alias{calc.y.G}
-\title{Compute the G-optimality criterion of the information matrix for logistic regression}
+\title{Given an information matrix and assuming logistic regression, compute the G-optimal objective function}
 \usage{
 calc.y.G(I, epsilon = 1e-05)
 }
@@ -13,8 +13,8 @@ calc.y.G(I, epsilon = 1e-05)
 no regularization takes place}
 }
 \value{
-G-optimality of the information matrix
+value of the G-optimal objective function
 }
 \description{
-Compute the G-optimality criterion of the information matrix for logistic regression
+Given an information matrix and assuming logistic regression, compute the G-optimal objective function
 }

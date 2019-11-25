@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic.R
 \name{calc.y.DA}
 \alias{calc.y.DA}
-\title{Compute the DA-optimality criterion of the information matrix for logistic regression}
+\title{Given an information matrix and assuming logistic regression, compute the D-A optimal objective function}
 \usage{
 calc.y.DA(I, A = t(matrix(c(0, 0, 1))), epsilon = 1e-05)
 }
@@ -15,8 +15,8 @@ calc.y.DA(I, A = t(matrix(c(0, 0, 1))), epsilon = 1e-05)
 no regularization takes place}
 }
 \value{
-DA-optimality of the information matrix
+value of the D-A optimal objective function
 }
 \description{
-Compute the DA-optimality criterion of the information matrix for logistic regression
+Given an information matrix and assuming logistic regression, compute the D-A optimal objective function
 }

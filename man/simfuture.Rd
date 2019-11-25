@@ -17,7 +17,7 @@ simfuture(covar, sim, int = NULL, z.probs, lossfunc, stoc = T,
 
 \item{z.probs}{vector of probabilities for each level of covariate z}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
 
 \item{stoc}{set to T if treatments are allocated using a stochastic method where the probability is
 determined by the optimality crtierion. Set to F if treatments are allocated deterministically.}
@@ -26,10 +26,10 @@ determined by the optimality crtierion. Set to F if treatments are allocated det
 
 \item{coordex}{set to T if coordinate exchange algorithm is used to allocate treatments in the trajectory, set to NULL for sequential approach.}
 
-\item{N}{natural number greater than 0 for horizon}
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
-Design matrix D, optimality
+Design matrix D, value of objective function
 }
 \description{
 Allocate treatments according to an information matrix based optimality criterion allowing for a pseudo-nonmyopic approach.

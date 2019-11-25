@@ -11,11 +11,13 @@ coordex(covar, k, lossfunc, int = NULL, ...)
 \arguments{
 \item{covar}{a dataframe for the covariates}
 
-\item{k}{the number of "outer loops" to perform}
+\item{k}{the number of random starting designs to use}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
 
 \item{int}{set to T if you allow for treatment-covariate interactions in the model, NULL otherwise}
+
+\item{...}{Further arguments to be passed to <lossfunc>}
 }
 \value{
 design matrix

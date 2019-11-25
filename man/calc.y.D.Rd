@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic.R
 \name{calc.y.D}
 \alias{calc.y.D}
-\title{Compute the D-optimality criterion of the information matrix for logistic regression}
+\title{Given an information matrix and assuming logistic regression, compute the D-optimal objective function}
 \usage{
 calc.y.D(I, epsilon = 1e-05)
 }
@@ -13,8 +13,8 @@ calc.y.D(I, epsilon = 1e-05)
 no regularization takes place}
 }
 \value{
-D-optimality of the information matrix
+value of the D-optimal objective function
 }
 \description{
-Compute the D-optimality criterion of the information matrix for logistic regression
+Given an information matrix and assuming logistic regression, compute the D-optimal objective function
 }

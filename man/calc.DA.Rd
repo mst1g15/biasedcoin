@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.DA}
 \alias{calc.DA}
-\title{Given a design matrix, calculate the D-A optimality for a linear model}
+\title{Given a design matrix for a linear model, compute the D-A optimal objective function}
 \usage{
 calc.DA(mat, A = t(c(0, 0, 1, 0)), epsilon = 1e-05)
 }
@@ -14,8 +14,8 @@ calc.DA(mat, A = t(c(0, 0, 1, 0)), epsilon = 1e-05)
 \item{epsilon}{a small real number used for regularization}
 }
 \value{
-D-A optimality of the matrix
+value of the D-A optimal objective function
 }
 \description{
-Given a design matrix, calculate the D-A optimality for a linear model
+Given a design matrix for a linear model, compute the D-A optimal objective function
 }

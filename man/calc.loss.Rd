@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.loss}
 \alias{calc.loss}
-\title{Given a design matrix, calculate the loss for a linear model}
+\title{Given a design matrix for a linear model, compute the loss}
 \usage{
 calc.loss(mat, epsilon = 1e-05, int = NULL)
 }
@@ -18,5 +18,5 @@ no regularization takes place}
 loss of the matrix
 }
 \description{
-Given a design matrix, calculate the loss for a linear model
+Given a design matrix for a linear model, compute the loss
 }

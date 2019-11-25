@@ -18,7 +18,9 @@ future(D.fix, n.r, sim, int, z.probs, lossfunc, ...)
 
 \item{z.probs}{vector of probabilities for each level of covariate z}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
 loss of the design matrix which includes trajectory

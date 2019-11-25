@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{linear.rand}
 \alias{linear.rand}
-\title{Assuming a linear model for the response, allocate treatment randomly.}
+\title{Assuming a linear model for the response, allocate treatments randomly.}
 \usage{
 linear.rand(covar, lossfunc = calc.D, int = NULL, init = 1,
   same.start = NULL, ...)
@@ -10,17 +10,19 @@ linear.rand(covar, lossfunc = calc.D, int = NULL, init = 1,
 \arguments{
 \item{covar}{a dataframe for the covariates}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
 
 \item{int}{set to T if you allow for treatment-covariate interactions in the model, NULL otherwise}
 
 \item{init}{the number of units in the initial design, by default set to 1}
 
 \item{same.start}{the design matrix to be used for the initial design. If set to NULL, function generates initial design.}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
-design matrix and optimality at each sample size
+design matrix and value of objective function at each sample size
 }
 \description{
-Assuming a linear model for the response, allocate treatment randomly.
+Assuming a linear model for the response, allocate treatments randomly.
 }

@@ -13,6 +13,8 @@ calc.mse(beta, D, y, sim, epsilon = 1e-05, true.bvcov = NULL)
 
 \item{y}{vector of responses}
 
+\item{sim}{number of simulated betas to generate}
+
 \item{epsilon}{a small real number used for regularization. If set to zero,
 no regularization takes place}
 

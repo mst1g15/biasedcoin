@@ -10,7 +10,7 @@ atkins(covar, lossfunc = calc.D, int = NULL, init = 1,
 \arguments{
 \item{covar}{a dataframe for the covariates}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{the objective function to minimize}
 
 \item{int}{set to T if you allow for treatment-covariate interactions in the model, NULL otherwise}
 
@@ -19,10 +19,12 @@ atkins(covar, lossfunc = calc.D, int = NULL, init = 1,
 \item{same.start}{the design matrix to be used for the initial design. If set to NULL, function generates initial design.}
 
 \item{stoc}{set to T if treatments are allocated using a stochastic method where the probability is
-determined by the optimality crtierion. Set to F if treatments are allocated deterministically.}
+determined by the optimality crtierion. Set to F if treatments are allocated deterministically}
+
+\item{...}{further arguments to be passed to <lossfunc>}
 }
 \value{
-design matrix and optimality at each sample size
+design matrix and value of objective function at each sample size
 }
 \description{
 Assuming a linear model for the response, allocate treatment sequentially based on an optimal design criterion

@@ -2,7 +2,7 @@
 % Please edit documentation in R/linear.R
 \name{calc.tz}
 \alias{calc.tz}
-\title{Given a design matrix, calculate the covariate balance for a linear model}
+\title{Given a design matrix for a linear model, calculate the covariate balance}
 \usage{
 calc.tz(mat)
 }
@@ -13,5 +13,5 @@ calc.tz(mat)
 covariate balance of the matrix
 }
 \description{
-Given a design matrix, calculate the covariate balance for a linear model
+Given a design matrix for a linear model, calculate the covariate balance
 }

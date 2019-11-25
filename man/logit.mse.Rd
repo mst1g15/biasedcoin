@@ -5,7 +5,7 @@
 \title{Allocate treatments according to the MSE matrix when a logisic model for the response is assumed.
 We simulate responses sequentially.}
 \usage{
-logit.mse(covar, true.beta, init, int = NULL, sim, lossfunc = calc.y.D,
+logit.mse(covar, true.beta, init, int = NULL, lossfunc = calc.y.D,
   epsilon = 1e-05, same.start = NULL, true.bvcov = NULL, ...)
 }
 \arguments{
@@ -17,18 +17,20 @@ logit.mse(covar, true.beta, init, int = NULL, sim, lossfunc = calc.y.D,
 
 \item{int}{set to T if you allow for treatment-covariate interactions in the model, NULL otherwise}
 
-\item{lossfunc}{a function for the optimality criterion to minimize}
+\item{lossfunc}{a function for the objective function to minimize}
 
 \item{epsilon}{a small real number used for regularization. If set to zero,
 no regularization takes place}
 
-\item{same.start}{set to the intial design if desired or set to NULL otherwise #'}
+\item{same.start}{set to the intial design if desired or set to NULL otherwise}
 
 \item{true.bvcov}{set to the true values of beta if the mse matrix is to be computed using the true values}
+
+\item{...}{further arguments to be passed to <logit.coord> and <lossfunc>}
 }
 \value{
 the design matrix D, responses y, all estimates of beta, final estimate of beta, probabilities of treatment
-assignment, proportion of favorable responses, optimality, trace of var-covar matrix, trace of bias matrix,
+assignment, proportion of favorable responses, value of objective function, trace of var-covar matrix, trace of bias matrix,
 trace of mse matrix, determinant of mse matrix
 }
 \description{

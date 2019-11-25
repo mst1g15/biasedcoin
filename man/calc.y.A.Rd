@@ -2,7 +2,7 @@
 % Please edit documentation in R/logistic.R
 \name{calc.y.A}
 \alias{calc.y.A}
-\title{Compute the A-optimality criterion of the information matrix for logistic regression}
+\title{Given an information matrix and assuming logistic regression, compute the A-optimal objective function}
 \usage{
 calc.y.A(I, epsilon = 1e-05)
 }
@@ -13,8 +13,8 @@ calc.y.A(I, epsilon = 1e-05)
 no regularization takes place}
 }
 \value{
-A-optimality of the information matrix
+value of the A-optimal objective function
 }
 \description{
-Compute the A-optimality criterion of the information matrix for logistic regression
+Given an information matrix and assuming logistic regression, compute the A-optimal objective function
 }
